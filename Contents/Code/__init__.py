@@ -52,7 +52,7 @@ class DaumSiteTvAgent(Agent.TV_Shows):
     data = JSON.ObjectFromURL(url=DAUM_TV_DETAIL % metadata.id)
     info = data['data']
     metadata.title = info['titleKo']
-    metadata.summary = info['introduce']
+    metadata.summary = String.DecodeHTMLEntities(String.StripTags(info['introduce']).strip())
     metadata.rating = float(info['tvProgramPoint']['pointAvg'])
     metadata.content_rating = ""
     poster_url = info['photo']['fullname']
