@@ -92,18 +92,18 @@ class DaumSiteTvAgent(Agent.TV_Shows):
         idx_poster += 1
         art_url = item['fullname']
         #art_url = re.sub("/C\d+x\d+/", "/image/", art_url)
-        art = HTTP.Request( art_url )
+        art = HTTP.Request( item['thumbnail'] )
         metadata.posters[art_url] = Proxy.Preview(art, sort_order = idx_poster)
       elif item['photoCategory'] in ['2', '50'] and idx_art < max_art:
         idx_art += 1
         art_url = item['fullname']
         #art_url = re.sub("/C\d+x\d+/", "/image/", art_url)
-        art = HTTP.Request( art_url )
+        art = HTTP.Request( item['thumbnail'] )
         metadata.art[art_url] = Proxy.Preview(art, sort_order = idx_art)
     Log.Debug('Total %d posters, %d artworks' %(idx_poster, idx_art))
     if idx_poster == 0:
       poster = HTTP.Request( poster_url )
-      metadata.posters[poster_url] = Proxy.Preview(poster, sort_order = 1)
+      metadata.posters[poster_url] = Proxy.Media(poster)
 
     # (4) from episode page
     data = JSON.ObjectFromURL(url=DAUM_TV_EPISODE % metadata.id)
