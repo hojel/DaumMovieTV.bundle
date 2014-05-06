@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 # TV from Daum Movie
 
-import urllib, unicodedata, re
+import urllib, unicodedata
 
 DAUM_TV_SRCH      = "http://movie.daum.net/search.do?type=tv&q=%s"
 DAUM_TV_DETAIL    = "http://m.movie.daum.net/data/movie/tv/detail.json?tvProgramId=%s"
 DAUM_TV_CAST      = "http://m.movie.daum.net/data/movie/tv/cast_crew.json?pageNo=1&pageSize=100&tvProgramId=%s"
 DAUM_TV_PHOTO     = "http://m.movie.daum.net/data/movie/photo/tv/list.json?pageNo=1&pageSize=100&id=%s"
 DAUM_TV_EPISODE   = "http://m.movie.daum.net/data/movie/tv/episode.json?pageNo=1&pageSize=1000&tvProgramId=%s"
+
+RE_YEAR_IN_NAME   =  Regex('\((\d+)\)')
+RE_TV_ID          =  Regex("tvProgramId=(\d+)")
+RE_PHOTO_SIZE     =  Regex("/C\d+x\d+/")
 
 ####################################################################################################
 def Start():
@@ -29,12 +33,12 @@ class DaumSiteTvAgent(Agent.TV_Shows):
 
     items = html.xpath('//span[@class="fl srch"]')
     for item in items:
-      try: year = re.search('\((\d+)\)', HTML.StringFromElement(item)).group(1)
+      try: year = RE_YEAR_IN_NAME.search(HTML.StringFromElement(item)).group(1)
       except: year = None
       node= item.xpath('a')[0]
       title = "".join(node.xpath('descendant-or-self::text()'))
       url = node.get('href')
-      id = re.search("tvProgramId=(\d+)", url).group(1)
+      id = RE_TV_ID.search(url).group(1)
 
       if year == media.year:
         score = 95
@@ -91,13 +95,13 @@ class DaumSiteTvAgent(Agent.TV_Shows):
       if item['photoCategory'] == '1' and idx_poster < max_poster:
         idx_poster += 1
         art_url = item['fullname']
-        #art_url = re.sub("/C\d+x\d+/", "/image/", art_url)
+        #art_url = RE_PHOTO_SIZE.sub("/image/", art_url)
         art = HTTP.Request( item['thumbnail'] )
         metadata.posters[art_url] = Proxy.Preview(art, sort_order = idx_poster)
       elif item['photoCategory'] in ['2', '50'] and idx_art < max_art:
         idx_art += 1
         art_url = item['fullname']
-        #art_url = re.sub("/C\d+x\d+/", "/image/", art_url)
+        #art_url = RE_PHOTO_SIZE.sub("/image/", art_url)
         art = HTTP.Request( item['thumbnail'] )
         metadata.art[art_url] = Proxy.Preview(art, sort_order = idx_art)
     Log.Debug('Total %d posters, %d artworks' %(idx_poster, idx_art))
